@@ -1,6 +1,10 @@
-#!/bin/bash -eux
-# This does not run on Ubuntu 20.04 because its zfs is too old for zstd and I
-# do not care enough to fix it.
+#!/bin/bash
+set -euo pipefail
+
+# Lift an existing Ubuntu install to tmpfs and use it to install NixOS to disk.
+# This isn't how I do it anymore, because I'd rather format the disk with a
+# current kernel instead of the one the VPS host deploys.
+# E.g. This does not run on Ubuntu 20.04 because its zfs is too old for zstd.
 
 flakesource="https://github.com/half-duplex/nixos-configs.git?ref=main"
 username="mal"
