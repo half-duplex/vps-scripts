@@ -4,17 +4,21 @@ Replaces a running Linux install with NixOS. Written for use with Ubuntu, may
 work with other distros.
 
 ## Building
-1. Install qemu-user-static, qemu-user-static-binfmt, and qemu-system-aarch64,
-   then restart systemd-binfmt.service
-2. Update the variables in flake.nix (SSH key) and stage2.sh to suit your needs
+1. For Arch, install `qemu-user-static`, `qemu-user-static-binfmt`, and
+   `qemu-system-aarch64`, then restart `systemd-binfmt.service`.
+2. Update the variables in `flake.nix` (SSH key) and `stage2.sh` to suit your needs
 3. Build the iso: `nix build . --system aarch64-linux`
 4. Make the iso (in `result/`) accessible over https, or plan to scp it to your
    home directory on the target system
 
 ## Installing
-1. Run stage1.sh from the target, omitting ISO=... if you scp'd it.
-   `curl https://github.com/half-duplex/vps-scripts/raw/main/install.sh \
-       | sudo ISO="https://example.com/nixos.iso" bash`
+1. Run `stage1.sh` from the target, omitting `ISO=...` if you scp'd it.
+
+   ```
+   curl -L https://github.com/half-duplex/vps-scripts/raw/main/nixos/stage1.sh \
+       | sudo ISO="https://example.com/nixos.iso" bash
+   ```
+
 2. Wait for the final NixOS system to come up, and grab your secrets from the
    drop box! You can watch `journalctl -f` on the running iso if you like, but
    it'll probably print secrets there.
