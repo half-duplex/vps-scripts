@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 set -x
 
@@ -26,39 +26,39 @@ $parted set 1 esp on
 $parted mkpart "_luks" ext4 256MB 100%
 
 # format
-mkfs.fat -F32 -n ESP "$disk"1
+mkfs.fat -F32 -n ESP "${disk}1"
 echo "FDE passphrase: $fdepass" >>"$infofile"
-echo -n "$fdepass" | cryptsetup luksFormat --sector-size 4096 "$disk"2 -
-echo -n "$fdepass" | cryptsetup \
-    --allow-discards \
-    --perf-no_read_workqueue \
-    --perf-no_write_workqueue \
-    --persistent \
-    open "$disk"2 cryptroot -
 zpool create \
     -o ashift=12 \
     -o autotrim=on \
     -O compression=zstd-1 \
     -O acltype=posixacl \
     -O xattr=sa \
+    -O dnodesize=auto \
+    -O normalization=formD \
     -O atime=off \
     -O mountpoint=legacy \
-    tank /dev/mapper/cryptroot
-zfs create tank/persist
+    -O encryption=on \
+    -O keylocation=prompt \
+    -O keyformat=passphrase \
+    tank "${disk}2" <<<"$fdepass"
+zfs create tank/home
 zfs create tank/nix
+zfs create tank/persist
 
 # mount
 mount -t tmpfs tmpfs "$target"
-mkdir -p "$target"/{boot,nix,persist}
-mount "$disk"1 "$target/boot"
-mount -t zfs tank/persist "$target/persist"
+mkdir -p "$target"/{boot,home,nix,persist}
+mount "${disk}1" "$target/boot"
+mount -t zfs tank/home "$target/home"
 mount -t zfs tank/nix "$target/nix"
+mount -t zfs tank/persist "$target/persist"
 
 # install
 nixos-install --no-root-passwd --root "$target" --flake "git+$flakesource#$hostname"
 
 # home dir
-mkdir -p "$target/persist/home/$username"
+mkdir -p "$target/home/$username"
 
 # user password
 echo "Passphrase for $username: $userpass" >>"$infofile"
@@ -77,7 +77,6 @@ echo "- initrd ed25519:" $(ssh-keygen -l -f "$target/persist/etc/ssh/ssh_host_ed
 
 # unmount
 zpool export tank
-cryptsetup close cryptroot
 umount "$target/boot"
 umount "$target"
 
