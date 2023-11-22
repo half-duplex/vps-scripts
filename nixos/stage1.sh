@@ -1,28 +1,8 @@
 #!/bin/bash
-
-# Nix Install
-# Replace a running system with nixos
-# mal@sec.gd
-# EUPL-1.2
-
-# Instructions:
-#  If you're not me, update the iso/flake below
-#  Update the ISO link in the script or manually transfer it to the vps' ~/
-#  $ curl https://github.com/half-duplex/vps-scripts/raw/main/install.sh | sudo bash
-#  Wait (watch `journalctl -f` if you like, but it'll probably print secrets)
-
-iso_url="https://objectstorage.ca-toronto-1.oraclecloud.com/p/ggJUW4nxP230gCMstJaHe2okXOH90fntwk-m2y1cEusmWwAUIbKHf_sOLc37Ph4D/n/yzmxptpvbzez/b/images/o/nixos-21.11pre330734.5cb226a06c4-aarch64-linux.iso"
-flakesource="https://github.com/half-duplex/nixos-config.git?ref=main"
-
-###
-
-target="/mnt" # nixos-install needs another flag if you change this
-infofile="/tmp/info"
-
-###
-
 set -euo pipefail
-#set -x
+set -x
+
+iso_url="${ISO:-https://sec.gd/files/f/nixos-auto-aarch64.iso}"
 
 choose_disk() {
     # Grab the first disk we see and assume it's right
